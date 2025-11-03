@@ -52,3 +52,36 @@ Run in the terminal:
 ``` bash
 make createsuperuser
 ```
+
+
+## Maps API
+
+The maps app manages locations, campuses, buildings, and rooms inside the project.
+
+### Available Endpoints
+
+| Method | Endpoint | Description |
+|---------|-----------|--------------|
+| `GET` | `/api/maps/<slug>/` | Returns a full campus (with all its buildings and rooms). |
+| `GET` | `/api/buildings/<id>/` | Returns details of a single building and its rooms. |
+| `GET` | `/api/rooms/<id>/` | Returns information about a specific room. |
+
+### Example
+`GET /api/maps/leonardo-32/`
+
+```json
+{
+  "id": 1,
+  "name": "Leonardo 32",
+  "slug": "leonardo-32",
+  "buildings": [
+    {
+      "id": 13,
+      "name": "Building 13",
+      "rooms": [
+        {"id": 101, "name": "Room 13.1"},
+        {"id": 102, "name": "Room 13.2"}
+      ]
+    }
+  ]
+}
