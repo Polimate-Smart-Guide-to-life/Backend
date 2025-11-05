@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.questions",
     "apps.resources",
-    "maps",
+    "apps.maps",
 ]
 
 MIDDLEWARE = [

@@ -7,5 +7,5 @@ urlpatterns = [
     path("api/", include("apps.users.urls")),
     path("api/", include("apps.questions.urls")),
     path("api/", include("apps.resources.urls")),
-    path("api/", include("maps.urls")),
+    path("api/", include("apps.maps.urls")),
 ]
