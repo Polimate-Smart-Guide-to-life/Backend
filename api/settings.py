@@ -20,7 +20,6 @@ environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -31,7 +30,6 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = (env("ENVIRONMENT") == "development") or (env("ENVIRONMENT") == "test")
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -85,6 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "api.wsgi.application"
 
+# Postgres db initialization
 DB_SCHEMA = {
     "development": "dev",
     "production": "prod",
@@ -103,6 +102,20 @@ DATABASES = {
         "OPTIONS": {"options": f"-c search_path={DB_SCHEMA}"},
     }
 }
+
+# Redis Cache
+REDIS_HOST = env("REDIS_HOST")
+REDIS_PORT = env("REDIS_PORT")
+REDIS_USERNAME = env("REDIS_USERNAME")
+REDIS_PASSWORD = env("REDIS_PASSWORD")
+
+#Gemini API
+GEMINI_API_KEY = env("GEMINI_API_KEY")
+
+# Azure LLM Connection
+AZURE_ENDPOINT_URL = env("AZURE_ENDPOINT_URL")
+AZURE_DEPLOYMENT_NAME = env("AZURE_DEPLOYMENT_NAME")
+AZURE_OPENAI_API_KEY = env("AZURE_OPENAI_API_KEY")
 
 CORS_ALLOW_ALL_ORIGINS = True
 
