@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Sede, Campus, Building, Room
+from .models import  Campus, Building, Room
 
 class RoomForMapSerializer(serializers.ModelSerializer):
     class Meta:

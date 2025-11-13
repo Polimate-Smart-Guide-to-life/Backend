@@ -25,7 +25,8 @@ class CampusMapView(APIView):
         rooms_qs = Room.objects.only("id", "name", "building_id").order_by("name")
         buildings_qs = (
             Building.objects
-            .only("id", "name", "code", "address", "latitude", "longitude", "opening_hours", "campus_id")
+            .only("id", "name", "code", "address", "latitude",
+                  "longitude", "opening_hours", "campus_id")
             .filter(campus__slug=slug)
             .order_by("name")
             .prefetch_related(Prefetch("rooms", queryset=rooms_qs))
@@ -39,12 +40,14 @@ class CampusMapView(APIView):
                 .prefetch_related(Prefetch("buildings", queryset=buildings_qs))
                 .get(slug=slug)
             )
-        except Campus.DoesNotExist:
-            raise NotFound(detail=f"Campus con slug '{slug}' non trovato.")
+        except Campus.DoesNotExist as exc:
+            raise NotFound(
+                detail=f"Campus con slug '{slug}' non trovato."
+            ) from exc
 
         return Response(CampusMapSerializer(campus).data)
-    
-    
+
+
 class BuildingDetailView(APIView):
     """
     GET /api/buildings/<int:pk>/
@@ -58,12 +61,15 @@ class BuildingDetailView(APIView):
         try:
             building = (
                 Building.objects
-                .only("id", "name", "code", "address", "latitude", "longitude", "opening_hours", "campus_id")
+                .only("id", "name", "code", "address", "latitude",
+                      "longitude", "opening_hours", "campus_id")
                 .prefetch_related(Prefetch("rooms", queryset=rooms_qs))
                 .get(pk=pk)
             )
-        except Building.DoesNotExist:
-            raise NotFound(detail=f"Building con id '{pk}' non trovato.")
+        except Building.DoesNotExist as exc:
+            raise NotFound(
+                detail=f"Building con id '{pk}' non trovato."
+            ) from exc
 
         return Response(BuildingForMapSerializer(building).data)
 
@@ -85,7 +91,9 @@ class RoomDetailView(APIView):
                       "building__latitude", "building__longitude")
                 .get(pk=pk)
             )
-        except Room.DoesNotExist:
-            raise NotFound(detail=f"Room con id '{pk}' non trovata.")
+        except Room.DoesNotExist as exc:
+            raise NotFound(
+                detail=f"Room con id '{pk}' non trovata."
+            ) from exc
 
         return Response(RoomDetailSerializer(room).data)
