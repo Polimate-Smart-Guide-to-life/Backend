@@ -7,21 +7,26 @@ from .llm import generate_conversation_response, get_trending_faqs
 from .redis_cache import redis_client
 from .utils import format_response_as_steps
 
+
 class LLMConversationAPI(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # Disable authentication completely for testing
+    authentication_classes = []
+    permission_classes = []  # Allow both authenticated and anonymous users
 
     def post(self, request):
-        user = request.user
         user_message = request.data.get("message")
 
         if not user_message:
             return Response({"error": "message is required"}, status=400)
 
-        chat_key = f"chat_history_{user.id}"
+        # For now, use a default identifier since auth is disabled
+        # You can use IP address or session key as identifier
+        user_id = request.META.get('REMOTE_ADDR', 'anonymous')
 
-        #Added for testing
-        #redis_client.delete(f"chat_history_{user.id}")
+        chat_key = f"chat_history_{user_id}"
+
+        # Added for testing
+        # redis_client.delete(f"chat_history_{user_id}")
 
         conversation_data = redis_client.get(chat_key)
         conversation = eval(conversation_data) if conversation_data else []
@@ -31,9 +36,11 @@ class LLMConversationAPI(APIView):
 
         assistant_response_raw = generate_conversation_response(conversation)
 
-        assistant_response_steps = format_response_as_steps(assistant_response_raw)
+        assistant_response_steps = format_response_as_steps(
+            assistant_response_raw)
 
-        conversation.append({"role": "assistant", "content": assistant_response_raw})
+        conversation.append(
+            {"role": "assistant", "content": assistant_response_raw})
 
         redis_client.set(chat_key, str(conversation), ex=1800)
 
@@ -42,15 +49,26 @@ class LLMConversationAPI(APIView):
             "message_count": len(conversation)
         }, status=200)
 
+
 class TrendingQuestionsAPI(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # Disable authentication for testing
+    authentication_classes = []
+    permission_classes = []
 
     def get(self, request):
         cache_key = "trending_questions"
 
-        #Added for testing
+        # Added for testing
         # redis_client.delete("trending_questions")
+
+        # For now, use a default identifier since auth is disabled
+        # You can use IP address or session key as identifier
+        user_id = request.META.get('REMOTE_ADDR', 'anonymous')
+
+        chat_key = f"chat_history_{user_id}"
+
+        # Added for testing
+        # redis_client.delete(f"chat_history_{user_id}")
 
         cached = redis_client.get(cache_key)
         if cached:

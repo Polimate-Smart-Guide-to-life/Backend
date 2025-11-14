@@ -29,7 +29,13 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (env("ENVIRONMENT") == "development") or (env("ENVIRONMENT") == "test")
 
-ALLOWED_HOSTS = []
+# Allow all hosts in development for Android emulator and local testing
+# 10.0.2.2 is the special IP that Android emulator uses to access host's localhost
+# In production, specify exact domain names
+ALLOWED_HOSTS = (
+    ["localhost", "127.0.0.1", "10.0.2.2", "0.0.0.0"] if DEBUG
+    else []  # In production, set specific hosts
+)
 
 # Application definition
 
