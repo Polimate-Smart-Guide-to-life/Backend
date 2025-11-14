@@ -1,5 +1,27 @@
-/project_env
-/venv
-/env
-*__pycache__
+# Python / Django
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Virtual environments
+/project_env/
+venv/
 .env
+.env.*
+
+#  Database locali
+db.sqlite3
+
+#  Static e media generati
+staticfiles/
+media/
+
+#  File di sistema / macOS
+.DS_Store
+
+#  Dati locali o test
+*.csv
+*.txt
+
+# Docker
+docker/.DS_Store
