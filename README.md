@@ -57,13 +57,10 @@ ________________________________________________________________________________
 
 # Tests
 
-## Quick run (recommended)
-
 Use the test runner script to execute all tests in a clean, isolated Docker Compose project. It runs each module in order and cleans up containers, networks, and volumes afterward.
 
 ```bash
-chmod +x ./run_tests.sh
-./run_tests.sh
+make runtests
 ```
 
 What this does:
@@ -85,7 +82,7 @@ All test files print clear terminal banners, per-test PASS messages, and a final
 | 3 | `test_login` | Login returns JWT access and refresh tokens | POST `token_obtain_pair` |
 | 4 | `test_update_me` | Partial update updates first_name successfully | PATCH `users-me` |
 
-### Help & Support (Questions) (2 tests)
+### Help & Support (2 tests)
 
 | No. | Test function | What it checks | Endpoint/Action |
 | --- | ------------- | -------------- | --------------- |
