@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "apps.questions",
     "apps.resources",
     "apps.maps",
+    "apps.llm",
 ]
 
 MIDDLEWARE = [
