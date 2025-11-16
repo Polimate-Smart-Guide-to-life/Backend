@@ -30,6 +30,11 @@ createsuperuser:
 	docker compose -f docker/dev.docker-compose.yml exec web python3 manage.py createsuperuser
 	docker compose -f docker/dev.docker-compose.yml down
 
+populate_faqs:
+	docker compose -f docker/dev.docker-compose.yml up -d
+	docker compose -f docker/dev.docker-compose.yml exec web python3 manage.py populate_faqs
+	docker compose -f docker/dev.docker-compose.yml down
+
 runtests:
 	chmod +x ./run_tests.sh
 	./run_tests.sh
