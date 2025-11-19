@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Count
 from .models import FAQCategory, FAQItem
-from .serializers import FAQCategorySerializer, FAQItemSerializer
+from .serializers import FAQCategorySerializer, FAQItemSerializer, FAQCategoryWithFAQsSerializer
 
 
 class FAQListAPI(APIView):
@@ -39,5 +39,26 @@ class FAQCategoriesAPI(APIView):
         ).order_by('order', 'name')
 
         serializer = FAQCategorySerializer(categories, many=True)
+        return Response(serializer.data, status=200)
+
+class FAQStaticTreeAPI(APIView):
+    
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        # - 'faqs' → FAQ items directly under the category
+        # - 'subcategories__faqs' → FAQ items under each subcategory
+        categories = (
+            FAQCategory.objects
+            .prefetch_related(
+                'faqs',
+                'subcategories',
+                'subcategories__faqs',
+            )
+            .order_by('order', 'name')
+        )
+
+        serializer = FAQCategoryWithFAQsSerializer(categories, many=True)
         return Response(serializer.data, status=200)
 
