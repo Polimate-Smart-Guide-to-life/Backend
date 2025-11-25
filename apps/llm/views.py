@@ -58,7 +58,18 @@ class TrendingQuestionsAPI(APIView):
         trending = get_trending_faqs()
         redis_client.set(cache_key, json.dumps(trending), ex=43200)
 
-        return Response({
+        # Provide optional formatted steps view derived from the list
+        try:
+            numbered_text = "\n".join([f"{i+1}. {q}" for i, q in enumerate(trending)])
+            formatted_steps = format_response_as_steps(numbered_text)
+        except Exception:
+            formatted_steps = None
+
+        payload = {
             "trending_questions": trending,
             "cached": False
-        }, status=200)
+        }
+        if formatted_steps is not None:
+            payload["formatted_steps"] = formatted_steps
+
+        return Response(payload, status=200)
