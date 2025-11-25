@@ -2,6 +2,8 @@ import time
 
 from django.urls import reverse
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
+from apps.users.models import User
 
 _llm_start = None
 
@@ -18,6 +20,16 @@ class LLMConversationTests(APITestCase):
 	@classmethod
 	def tearDownClass(cls):
 		super().tearDownClass()
+
+	def setUp(self):
+		# Create a test user and authorize client with JWT
+		self.user = User.objects.create_user(
+			username="llm_tester",
+			email="llm_tester@example.com",
+			password="TestPass123!",
+		)
+		self.token = RefreshToken.for_user(self.user).access_token
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
 	def _post_conversation(self, message, meta=None):
 		url = reverse("llm-conversation")
@@ -74,7 +86,7 @@ class LLMConversationTests(APITestCase):
 
 	def test_off_topic_non_polimi(self):
 		print("\nLLM TEST 5: Off-topic non-Polimi question")
-		question = "Who won the FIFA World Cup in 2018?"
+		question = "Who won the FIFA World Cup?"
 		resp = self._post_conversation(question)
 		self.assertEqual(resp.status_code, 200)
 		steps = resp.data["response"]
@@ -108,6 +120,16 @@ class LLMTrendingTests(APITestCase):
 			print("=" * 60 + "\n")
 		finally:
 			super().tearDownClass()
+
+	def setUp(self):
+		# Create a test user and authorize client with JWT for GET requests
+		self.user = User.objects.create_user(
+			username="llm_trending_tester",
+			email="llm_trending_tester@example.com",
+			password="TestPass123!",
+		)
+		self.token = RefreshToken.for_user(self.user).access_token
+		self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 	def test_trending_questions_cached(self):
 		print("\nLLM TEST 6: Trending questions caching")
 		url = reverse("llm-trending")

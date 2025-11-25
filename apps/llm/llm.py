@@ -10,6 +10,12 @@ SYSTEM_PROMPT = (
     "\"I can only help with topics related to Politecnico di Milano.\""
 )
 
+REASONING_FORMAT_PROMPT = (
+    "Always return your response as a strict JSON object with keys 'answer' and 'reasoning'. "
+    "'answer': the final concise reply for the user. 'reasoning': a brief (1-3 sentences) explanation of why you gave that answer (do not include sensitive internal policies). "
+    "Example: {\"answer\": \"<final answer>\", \"reasoning\": \"<brief rationale>\"}."
+)
+
 # THIS SHOULD BE USED ONLY WHEN USING GEMINI API
 #==================================================================================================================================
 # client = genai.Client(api_key=settings.GEMINI_API_KEY)
@@ -58,6 +64,13 @@ client = AzureOpenAI(
     api_version="2025-01-01-preview",
 )
 
+def get_max_completion_tokens():
+    val = getattr(settings, "LLM_MAX_COMPLETION_TOKENS", 2048)
+    try:
+        return max(1, min(int(val), 16384))
+    except (TypeError, ValueError):
+        return 2048
+
 def generate_conversation_response(messages):
     """
     messages = [
@@ -74,19 +87,45 @@ def generate_conversation_response(messages):
             "content": str(m["content"])
         })
 
-    # Prepend system prompt
-    clean_messages.insert(0, {
-        "role": "system",
-        "content": SYSTEM_PROMPT
-    })
+    # Prepend system prompt and formatting instruction
+    clean_messages.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
+    clean_messages.insert(1, {"role": "system", "content": REASONING_FORMAT_PROMPT})
 
     response = client.chat.completions.create(
         model=deployment,
         messages=clean_messages,
-        max_completion_tokens=40000
+        max_completion_tokens=get_max_completion_tokens()
     )
 
-    return response.choices[0].message.content
+    raw_content = str(response.choices[0].message.content or "")
+
+    # Attempt to parse JSON for answer and reasoning
+    answer = raw_content
+    reasoning = None
+    try:
+        parsed = json.loads(raw_content)
+        if isinstance(parsed, dict) and "answer" in parsed and "reasoning" in parsed:
+            answer = parsed.get("answer")
+            reasoning = parsed.get("reasoning")
+    except json.JSONDecodeError:
+        pass
+
+    # Determine latest user question for logging
+    latest_user_message = None
+    for m in reversed(clean_messages):
+        if m.get("role") == "user":
+            latest_user_message = m.get("content")
+            break
+
+    # Print reasoning to terminal logs
+    if latest_user_message:
+        print("[LLM QUESTION]", latest_user_message, flush=True)
+    if reasoning:
+        print("[LLM REASONING]", reasoning, flush=True)
+    else:
+        print("[LLM REASONING] <unavailable – JSON parse failed>", flush=True)
+
+    return answer
 
 def get_trending_faqs():
     prompt = (
@@ -100,7 +139,7 @@ def get_trending_faqs():
         messages=[
             {"role": "user", "content": prompt}
         ],
-        max_completion_tokens=40000,
+        max_completion_tokens=get_max_completion_tokens(),
         stop=None,
         stream=False
     )
